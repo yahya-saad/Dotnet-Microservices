@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using PlatformService.Data;
 using PlatformService.Dtos;
 using PlatformService.Models;
+using PlatformService.SyncDataServices.http;
 
 namespace PlatformService.Controllers;
 
@@ -12,10 +13,12 @@ public class PlatformsController : ControllerBase
 {
     private readonly IPlatformRepository platformRepository;
     private readonly IMapper mapper;
-    public PlatformsController(IPlatformRepository platformRepository, IMapper mapper)
+    private readonly ICommandDataClient commandDataClient;
+    public PlatformsController(IPlatformRepository platformRepository, IMapper mapper, ICommandDataClient commandDataClient)
     {
         this.platformRepository = platformRepository;
         this.mapper = mapper;
+        this.commandDataClient = commandDataClient;
     }
 
     [HttpGet]
@@ -50,13 +53,23 @@ public class PlatformsController : ControllerBase
     [EndpointSummary("Create a new platform")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public ActionResult<PlatformDto> CreatePlatform([FromBody] PlatformCreateDto dto)
+    public async Task<ActionResult<PlatformDto>> CreatePlatform([FromBody] PlatformCreateDto dto)
     {
         var platform = mapper.Map<Platform>(dto);
         platformRepository.CreatePlatform(platform);
         platformRepository.SaveChanges();
 
         var result = mapper.Map<PlatformDto>(platform);
+
+        try
+        {
+            await commandDataClient.SendPlatformToCommand(result);
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"--> Could not send synchronously: {ex.Message}");
+        }
 
         return CreatedAtAction(nameof(GetPlatformById), new { id = platform.Id }, result);
     }

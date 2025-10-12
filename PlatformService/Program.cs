@@ -8,7 +8,7 @@ builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMe
 builder.Services.AddScoped<IPlatformRepository, PlatformRepository>();
 
 builder.Services.AddControllers();
-builder.Services.AddPlatformServices();
+builder.Services.AddPlatformServices(builder.Configuration);
 
 var app = builder.Build();
 
