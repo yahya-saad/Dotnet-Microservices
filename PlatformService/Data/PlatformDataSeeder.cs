@@ -1,4 +1,5 @@
-﻿using PlatformService.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using PlatformService.Models;
 
 namespace PlatformService.Data;
 
@@ -8,13 +9,36 @@ public static class PlatformDataSeeder
     {
         using var scope = app.ApplicationServices.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var env = scope.ServiceProvider.GetRequiredService<IWebHostEnvironment>();
+
+        ApplyMigrations(context, env);
         SeedDatabase(context);
+    }
+
+    private static void ApplyMigrations(AppDbContext context, IWebHostEnvironment env)
+    {
+        try
+        {
+            if (env.IsDevelopment())
+            {
+                Console.WriteLine("--> Using InMemory DB, skipping migrations...");
+                context.Database.EnsureCreated();
+            }
+            else
+            {
+                Console.WriteLine("--> Applying pending migrations...");
+                context.Database.Migrate();
+                Console.WriteLine("--> Database migration applied successfully.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"❌ Migration failed: {ex.Message}");
+        }
     }
 
     private static void SeedDatabase(AppDbContext context)
     {
-        context.Database.EnsureCreated();
-
         if (!context.Platforms.Any())
         {
             Console.WriteLine("--> Seeding initial platform data...");
