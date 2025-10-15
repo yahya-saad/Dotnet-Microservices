@@ -28,6 +28,7 @@ public static class ServiceExtensions
 
     private static void ConfigureHttpClient(this IServiceCollection services, IConfiguration configuration)
     {
+
         services.AddHttpClient<ICommandDataClient, HttpCommandDataClient>(c =>
         {
             c.BaseAddress = new Uri(configuration["CommandService:BaseUrl"]!);

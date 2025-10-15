@@ -1,4 +1,6 @@
+using CommandsService.AsyncDataService;
 using CommandsService.Data;
+using CommandsService.EventProcessing;
 using CommandsService.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,8 +10,11 @@ builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("InMe
 builder.Services.AddCommandsServices();
 
 builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
+builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
+builder.Services.AddHostedService<RabbitMqSubscriber>();
 
 builder.Services.AddControllers();
+
 
 var app = builder.Build();
 

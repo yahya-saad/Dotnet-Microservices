@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using PlatformService.AsyncDataServices;
 using PlatformService.Data;
 using PlatformService.Dtos;
 using PlatformService.Models;
@@ -14,11 +15,13 @@ public class PlatformsController : ControllerBase
     private readonly IPlatformRepository platformRepository;
     private readonly IMapper mapper;
     private readonly ICommandDataClient commandDataClient;
-    public PlatformsController(IPlatformRepository platformRepository, IMapper mapper, ICommandDataClient commandDataClient)
+    private readonly IRabbitMqPublisher _rabbitMqPublisher;
+    public PlatformsController(IPlatformRepository platformRepository, IMapper mapper, ICommandDataClient commandDataClient, IRabbitMqPublisher rabbitMqPublisher)
     {
         this.platformRepository = platformRepository;
         this.mapper = mapper;
         this.commandDataClient = commandDataClient;
+        _rabbitMqPublisher = rabbitMqPublisher;
     }
 
     [HttpGet]
@@ -61,6 +64,7 @@ public class PlatformsController : ControllerBase
 
         var result = mapper.Map<PlatformDto>(platform);
 
+        // Send sync Message
         try
         {
             await commandDataClient.SendPlatformToCommand(result);
@@ -69,6 +73,17 @@ public class PlatformsController : ControllerBase
         catch (Exception ex)
         {
             Console.WriteLine($"--> Could not send synchronously: {ex.Message}");
+        }
+
+        // Send Async Message via RabbitMQ
+        try
+        {
+            var platformsPublishDto = mapper.Map<PlatformPublishedDto>(result);
+            await _rabbitMqPublisher.PublishMessage(platformsPublishDto);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"--> Could not send asynchronously: {ex.Message}");
         }
 
         return CreatedAtAction(nameof(GetPlatformById), new { id = platform.Id }, result);

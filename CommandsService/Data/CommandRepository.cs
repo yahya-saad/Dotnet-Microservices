@@ -17,6 +17,7 @@ public class CommandRepository : ICommandRepository
         _context.Commands.Add(command);
     }
 
+    public void DeleteCommand(Command command) => _context.Commands.Remove(command);
 
     public IEnumerable<Command> GetAllCommandsForPlatform(int platformId) =>
         _context.Commands.Where(c => c.PlatformId == platformId).ToList();

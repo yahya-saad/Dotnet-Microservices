@@ -18,5 +18,7 @@ public class PlatformRepository : IPlatformRepository
     public Platform? GetPlatformById(int id) => _context.Platforms.FirstOrDefault(p => p.Id == id);
 
     public bool PlatformExists(int platformId) => _context.Platforms.Any(p => p.Id == platformId);
+    public bool ExternalPlatformExists(int externalPlatformId) =>
+        _context.Platforms.Any(p => p.ExternalId == externalPlatformId);
 
 }

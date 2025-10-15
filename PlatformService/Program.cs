@@ -1,3 +1,4 @@
+using PlatformService.AsyncDataServices;
 using PlatformService.Data;
 using PlatformService.Extentions;
 
@@ -8,6 +9,7 @@ builder.Services.AddDatabase(builder.Configuration, builder.Environment);
 builder.Services.AddPlatformServices(builder.Configuration);
 
 builder.Services.AddScoped<IPlatformRepository, PlatformRepository>();
+builder.Services.AddSingleton<IRabbitMqPublisher, RabbitMqPublisher>();
 
 builder.Services.AddControllers();
 

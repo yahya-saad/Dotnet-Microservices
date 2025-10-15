@@ -77,4 +77,26 @@ public class CommandsController : ControllerBase
             new { platformId = platformId, commandId = commandDto.Id }, commandDto);
     }
 
+    [HttpDelete("{commandId:int}")]
+    [EndpointSummary("Delete a specific command for a platform")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult DeleteCommandForPlatform(int platformId, int commandId)
+    {
+        Console.WriteLine($"--> Deleting Command {commandId} for Platform {platformId}");
+
+        var platformExists = _repository.Platform.PlatformExists(platformId);
+        if (!platformExists)
+            return NotFound();
+
+        var command = _repository.Command.GetCommand(platformId, commandId);
+        if (command == null)
+            return NotFound();
+
+        _repository.Command.DeleteCommand(command);
+        _repository.Save();
+
+        return NoContent();
+    }
+
 }
