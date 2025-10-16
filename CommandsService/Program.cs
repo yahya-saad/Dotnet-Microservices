@@ -2,6 +2,7 @@ using CommandsService.AsyncDataService;
 using CommandsService.Data;
 using CommandsService.EventProcessing;
 using CommandsService.Extensions;
+using CommandsService.SyncDataServices.grpc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,7 @@ builder.Services.AddCommandsServices();
 
 builder.Services.AddScoped<IRepositoryManager, RepositoryManager>();
 builder.Services.AddSingleton<IEventProcessor, EventProcessor>();
+builder.Services.AddScoped<IPlatformDataClient, PlatformDataClient>();
 builder.Services.AddHostedService<RabbitMqSubscriber>();
 
 builder.Services.AddControllers();
@@ -26,5 +28,5 @@ app.UseSwaggerUI();
 app.UseAuthorization();
 
 app.MapControllers();
-
+app.PrepPopulation();
 app.Run();

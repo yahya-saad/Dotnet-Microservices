@@ -12,6 +12,7 @@ builder.Services.AddScoped<IPlatformRepository, PlatformRepository>();
 builder.Services.AddSingleton<IRabbitMqPublisher, RabbitMqPublisher>();
 
 builder.Services.AddControllers();
+builder.Services.AddGrpc();
 
 var app = builder.Build();
 
@@ -26,5 +27,6 @@ app.SeedPlatforms();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGrpcEndpoints();
 
 app.Run();
